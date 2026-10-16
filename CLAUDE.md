@@ -45,7 +45,8 @@ jamais de secret dans les logs (`Cookie` a un `Debug` masqué). Vérifier avant 
 - ✅ VM (utilisateur) : 1920x1440 → 1920x1025 en 0.94 s, no-op 0.5 s, entrées invalides refusées.
 - ⬜ Chemin root non testé (démon `watch`, découverte + peercred + cookie root, durcissement systemd)
   → nécessite `sudo ./install.sh` par l'utilisateur. La VM a actuellement l'édition **bash** installée.
-- ⬜ Pas de remote GitHub.
+- ✅ GitHub : `git@github.com:unsafeOxOggy/kvm-autofit-rs.git` (public, branche master). Push avec la clé `~/.ssh/ssh2`
+  (réglée dans `core.sshCommand`) ; auteur = adresse noreply GitHub (ne jamais committer l'e-mail perso).
 
 ## TODO
 
