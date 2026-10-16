@@ -1,4 +1,4 @@
-//! Native RandR equivalent of `xrandr --output … --auto` for every connected output.
+//! Native RandR equivalent of `xrandr --output ... --auto` for every connected output.
 //!
 //! `GetScreenResources` (not the `Current` variant) makes X re-probe connectors,
 //! which is what picks up the new preferred mode published by virtio-gpu / qxl.

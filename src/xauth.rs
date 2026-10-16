@@ -126,7 +126,7 @@ pub fn read_checked(path: &Path, allowed_owners: &[u32]) -> Result<Vec<u8>, Stri
         Ok(())
     };
     // Check *before* opening: open() on a device node can have side effects
-    // (tape rewind, modem reset…) and the path is attacker-chosen.
+    // (tape rewind, modem reset...) and the path is attacker-chosen.
     let before = rustix::fs::lstat(path).map_err(|e| format!("stat auth file: {e}"))?;
     check(&before)?;
     let fd = rustix::fs::open(
@@ -135,7 +135,7 @@ pub fn read_checked(path: &Path, allowed_owners: &[u32]) -> Result<Vec<u8>, Stri
         Mode::empty(),
     )
     .map_err(|e| format!("open auth file: {e}"))?;
-    // …and again on the opened fd, which must be the very same file (no swap in between).
+    // ...and again on the opened fd, which must be the very same file (no swap in between).
     let st = rustix::fs::fstat(&fd).map_err(|e| format!("stat auth file: {e}"))?;
     check(&st)?;
     if (st.st_dev, st.st_ino) != (before.st_dev, before.st_ino) {

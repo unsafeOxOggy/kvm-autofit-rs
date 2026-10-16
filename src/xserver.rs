@@ -206,7 +206,7 @@ mod tests {
         assert_eq!(parse_display(":0"), Some(0));
         assert_eq!(parse_display(":12.0"), Some(12));
         for bad in [
-            "0", ":", ":-1", ":+1", ":1.", ":1.x", "host:0", ":0 ", ":999999", ":1;id", ":٣",
+            "0", ":", ":-1", ":+1", ":1.", ":1.x", "host:0", ":0 ", ":999999", ":1;id", ":\u{663}",
         ] {
             assert_eq!(parse_display(bad), None, "{bad}");
         }

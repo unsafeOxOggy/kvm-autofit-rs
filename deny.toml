@@ -1,4 +1,4 @@
-# cargo deny check — supply-chain policy for kvm-autofit (root daemon: keep the tree small)
+# cargo deny check - supply-chain policy for kvm-autofit (root daemon: keep the tree small)
 [graph]
 targets = ["x86_64-unknown-linux-musl", "x86_64-unknown-linux-gnu"]
 

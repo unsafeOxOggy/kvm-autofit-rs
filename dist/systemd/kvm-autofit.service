@@ -35,7 +35,7 @@ RestrictSUIDSGID=yes
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 RemoveIPC=yes
-# Sockets: X (unix), journal (unix), uevents (netlink) — nothing else, no network.
+# Sockets: X (unix), journal (unix), uevents (netlink) - nothing else, no network.
 RestrictAddressFamilies=AF_UNIX AF_NETLINK
 IPAddressDeny=any
 SystemCallArchitectures=native

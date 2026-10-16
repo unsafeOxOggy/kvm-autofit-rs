@@ -1,4 +1,4 @@
-//! kvm-autofit — fit X displays to the size the KVM host asks for (Rust edition).
+//! kvm-autofit - fit X displays to the size the KVM host asks for (Rust edition).
 //!
 //! Same CLI as the bash version, plus `watch` (netlink daemon, replaces the udev rule).
 #![forbid(unsafe_code)]

@@ -9,7 +9,7 @@ remplace l'autre.
 
 | | bash | rust |
 |---|---|---|
-| Détection des redimensionnements | règle udev → service oneshot | démon `watch` (netlink noyau, sans libudev) |
+| Détection des redimensionnements | règle udev -> service oneshot | démon `watch` (netlink noyau, sans libudev) |
 | Application | `xrandr --auto` (dépendance) | RandR natif via `x11rb` (aucune dépendance) |
 | Livraison | script, modifiable dans la VM | binaire statique musl ~840 Kio, compilé sur l'hôte |
 | Fichiers installés | script + règle udev + unité + hook LightDM | binaire + unité + hook LightDM |
@@ -38,7 +38,7 @@ Retour à l'édition bash : `sudo ./install.sh --uninstall` puis `sudo ~/kvm-aut
 | `kvm-autofit display-setup` | hook LightDM |
 | `kvm-autofit doctor` | diagnostic |
 
-Réglages settle : `KVM_AUTOFIT_ROUNDS` (1–64, défaut 16), `KVM_AUTOFIT_DELAY` (0.05–2 s, défaut 0.25).
+Réglages settle : `KVM_AUTOFIT_ROUNDS` (1-64, défaut 16), `KVM_AUTOFIT_DELAY` (0.05-2 s, défaut 0.25).
 Logs : `journalctl -t kvm-autofit -u kvm-autofit -b`.
 
 ## Modèle de sécurité
@@ -47,12 +47,12 @@ Le démon tourne en root et lit des données que n'importe quel utilisateur peut
 
 | Entrée | Menace | Défense |
 |---|---|---|
-| `/proc/<pid>/cmdline` de `Xorg` (`-auth`) | faux `Xorg :5 -auth /etc/shadow` pour faire lire un fichier par root | le fichier n'est lu que s'il appartient à l'uid du serveur X ; `O_NOFOLLOW`, fichier régulier, ≤ 64 Kio |
+| `/proc/<pid>/cmdline` de `Xorg` (`-auth`) | faux `Xorg :5 -auth /etc/shadow` pour faire lire un fichier par root | le fichier n'est lu que s'il appartient à l'uid du serveur X ; `O_NOFOLLOW`, fichier régulier, <= 64 Kio |
 | socket `/tmp/.X11-unix/X<n>` (dossier 1777) | faux serveur qui récupère le cookie | `SO_PEERCRED` : l'uid du pair doit être celui du Xorg découvert |
 | chemin `-auth`/`XAUTHORITY` vers un périphérique | `open()` par root avec effets de bord | `lstat` avant `open()`, puis `fstat` : même dev/inode |
 | Xauthority | fichier piégé | parseur borné sans panique, seul `MIT-MAGIC-COOKIE-1` de 16 octets, cookie jamais journalisé |
 | `/proc/<pid>/environ` (repli) | `XAUTHORITY` pointant ailleurs | fichier du client lui-même ; jamais vers un serveur X non-root d'un autre uid |
-| netlink uevent | faux événements / tempête | seulement pid 0 (noyau), messages ≤ 8 Kio non tronqués, `SUBSYSTEM=drm` + `ACTION=change` + `dri/card*`, regroupement 150 ms et limite 1 recadrage / 300 ms |
+| netlink uevent | faux événements / tempête | seulement pid 0 (noyau), messages <= 8 Kio non tronqués, `SUBSYSTEM=drm` + `ACTION=change` + `dri/card*`, regroupement 150 ms et limite 1 recadrage / 300 ms |
 | arguments / env | injection | `--display` strict (`:N`), env bornée, aucun shell, ré-exécution avec env vidée |
 | logs | injection de lignes | caractères de contrôle neutralisés, 512 caractères max |
 | géométrie X | débordement | `checked_add`, `try_from`, bornes `GetScreenSizeRange` |

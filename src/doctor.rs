@@ -131,7 +131,7 @@ fn spice_agents() -> usize {
 
 pub fn run() {
     println!(
-        "kvm-autofit {} (rust) — guest display diagnosis",
+        "kvm-autofit {} (rust) - guest display diagnosis",
         env!("CARGO_PKG_VERSION")
     );
 
@@ -197,6 +197,6 @@ pub fn run() {
     }
     println!("     logs: journalctl -t kvm-autofit -b");
     println!(
-        "     host: virt-manager → View → Scale Display → 'Auto resize VM with window' must be ON"
+        "     host: virt-manager -> View -> Scale Display -> 'Auto resize VM with window' must be ON"
     );
 }

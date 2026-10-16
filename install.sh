@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# kvm-autofit (rust) installer — sudo ./install.sh [--uninstall] [--dry-run] [--no-lightdm]
+# kvm-autofit (rust) installer - sudo ./install.sh [--uninstall] [--dry-run] [--no-lightdm]
 # Installs the prebuilt static binary from dist/bin/ (made on the host by ./build.sh).
 # Replaces the bash edition if present (same command name and paths).
 set -euo pipefail
@@ -24,9 +24,9 @@ for a in "$@"; do
     esac
 done
 
-info() { printf '\033[32m•\033[0m %s\n' "$*"; }
-warn() { printf '\033[33m▲\033[0m %s\n' "$*" >&2; }
-die()  { printf '\033[31m✗\033[0m %s\n' "$*" >&2; exit 1; }
+info() { printf '\033[32m[*]\033[0m %s\n' "$*"; }
+warn() { printf '\033[33m[!]\033[0m %s\n' "$*" >&2; }
+die()  { printf '\033[31m[x]\033[0m %s\n' "$*" >&2; exit 1; }
 run()  { if (( DRY )); then printf '  [dry-run] %s\n' "$*"; else "$@"; fi; }
 
 (( DRY || EUID == 0 )) || die "run with sudo: sudo $0 $*"
@@ -49,18 +49,18 @@ if (( UNINSTALL )); then
 fi
 
 # --- binary integrity: present, static ELF x86-64, checksum from build.sh matches
-[[ -f $SRC_BIN && ! -L $SRC_BIN ]] || die "missing $SRC_BIN — run ./build.sh on the host, then copy the folder"
+[[ -f $SRC_BIN && ! -L $SRC_BIN ]] || die "missing $SRC_BIN - run ./build.sh on the host, then copy the folder"
 [[ "$(head -c4 "$SRC_BIN" | od -An -tx1 | tr -d ' \n')" == 7f454c46 ]] || die "$SRC_BIN is not an ELF binary"
 [[ "$(uname -m)" == x86_64 ]] || die "binary is built for x86_64, this machine is $(uname -m)"
 if [[ -f $SRC_BIN.sha256 ]]; then
     (cd "$(dirname "$SRC_BIN")" && sha256sum --quiet -c kvm-autofit.sha256) || die "checksum mismatch: corrupted copy?"
 else
-    warn "no checksum file next to the binary — integrity not verified"
+    warn "no checksum file next to the binary - integrity not verified"
 fi
 "$SRC_BIN" --version >/dev/null || die "binary does not run on this system"
 
 virt="$(systemd-detect-virt --vm 2>/dev/null || true)"
-[[ $virt == kvm || $virt == qemu ]] || warn "not a KVM guest (detected: ${virt:-none}) — installing anyway"
+[[ $virt == kvm || $virt == qemu ]] || warn "not a KVM guest (detected: ${virt:-none}) - installing anyway"
 
 # --- replace the bash edition if installed (its udev rule would double-trigger)
 if [[ -f $BASH_UDEV ]]; then
@@ -84,7 +84,7 @@ if (( WITH_LIGHTDM )) && [[ -d /etc/lightdm ]]; then
              | grep -vxF "$LIGHTDM" || true)"
     if [[ -n $other ]]; then
         warn "LightDM already defines a setup script in: $other"
-        warn "skipping LightDM hooks — call '$LIBEXEC display-setup' from that script instead"
+        warn "skipping LightDM hooks - call '$LIBEXEC display-setup' from that script instead"
     else
         info "installing LightDM hooks $LIGHTDM"
         run install -o root -g root -Dm644 "$ROOT/dist/lightdm/50-kvm-autofit.conf" "$LIGHTDM"
