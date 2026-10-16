@@ -1,0 +1,27 @@
+[package]
+description = "Fit X displays to the KVM host window (virtio-gpu / qxl guests)"
+license = "MIT"
+rust-version = "1.88"
+name = "kvm-autofit"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive"] }
+rustix = { version = "1.1.5", features = ["net", "process", "fs", "system"] }
+x11rb = { version = "0.14", default-features = false, features = ["randr"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+opt-level = "s"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
+indexing_slicing = "warn"
