@@ -17,6 +17,8 @@ use x11rb::rust_connection::{DefaultStream, RustConnection};
 use crate::xauth::{self, Cookie};
 
 const MAX_PROC_READ: u64 = 256 * 1024;
+/// Any user can spawn processes named `Xorg`: cap the work per pass (root servers first).
+const MAX_SERVERS: usize = 8;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct XServer {
@@ -79,7 +81,7 @@ fn pids() -> impl Iterator<Item = u32> {
         .filter_map(|e| e.file_name().to_str()?.parse().ok())
 }
 
-/// All running Xorg servers, sorted by display, one per display.
+/// Running Xorg servers, one per display, root-owned first, at most `MAX_SERVERS`.
 pub fn discover() -> Vec<XServer> {
     let mut out: Vec<XServer> = Vec::new();
     for pid in pids() {
@@ -111,6 +113,8 @@ pub fn discover() -> Vec<XServer> {
     }
     out.sort_by_key(|s| s.display);
     out.dedup_by_key(|s| s.display);
+    out.sort_by_key(|s| (s.uid != 0, s.display));
+    out.truncate(MAX_SERVERS);
     out
 }
 

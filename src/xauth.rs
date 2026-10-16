@@ -113,21 +113,33 @@ pub fn read_checked(path: &Path, allowed_owners: &[u32]) -> Result<Vec<u8>, Stri
     if !path.is_absolute() {
         return Err("auth path is not absolute".into());
     }
+    let check = |st: &rustix::fs::Stat| -> Result<(), String> {
+        if rustix::fs::FileType::from_raw_mode(st.st_mode) != rustix::fs::FileType::RegularFile {
+            return Err("auth file is not a regular file".into());
+        }
+        if !allowed_owners.contains(&st.st_uid) {
+            return Err(format!(
+                "auth file owned by uid {} (not trusted for this X server)",
+                st.st_uid
+            ));
+        }
+        Ok(())
+    };
+    // Check *before* opening: open() on a device node can have side effects
+    // (tape rewind, modem reset…) and the path is attacker-chosen.
+    let before = rustix::fs::lstat(path).map_err(|e| format!("stat auth file: {e}"))?;
+    check(&before)?;
     let fd = rustix::fs::open(
         path,
         OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK | OFlags::NOCTTY,
         Mode::empty(),
     )
     .map_err(|e| format!("open auth file: {e}"))?;
+    // …and again on the opened fd, which must be the very same file (no swap in between).
     let st = rustix::fs::fstat(&fd).map_err(|e| format!("stat auth file: {e}"))?;
-    if rustix::fs::FileType::from_raw_mode(st.st_mode) != rustix::fs::FileType::RegularFile {
-        return Err("auth file is not a regular file".into());
-    }
-    if !allowed_owners.contains(&st.st_uid) {
-        return Err(format!(
-            "auth file owned by uid {} (not trusted for this X server)",
-            st.st_uid
-        ));
+    check(&st)?;
+    if (st.st_dev, st.st_ino) != (before.st_dev, before.st_ino) {
+        return Err("auth file changed while opening it".into());
     }
     let mut buf = Vec::new();
     File::from(fd)
@@ -223,6 +235,12 @@ mod tests {
         assert!(read_checked(&link, &[me]).is_err());
         assert!(read_checked(&file, &[me + 1]).is_err());
         assert!(read_checked(&dir, &[me]).is_err());
+        // device nodes are refused before open() (here /dev/null, owner root)
+        assert!(
+            read_checked(Path::new("/dev/null"), &[0])
+                .unwrap_err()
+                .contains("regular")
+        );
         assert_eq!(read_checked(&file, &[me]).unwrap(), b"x");
         std::fs::remove_dir_all(&dir).unwrap();
     }

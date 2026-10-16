@@ -49,6 +49,7 @@ Le démon tourne en root et lit des données que n'importe quel utilisateur peut
 |---|---|---|
 | `/proc/<pid>/cmdline` de `Xorg` (`-auth`) | faux `Xorg :5 -auth /etc/shadow` pour faire lire un fichier par root | le fichier n'est lu que s'il appartient à l'uid du serveur X ; `O_NOFOLLOW`, fichier régulier, ≤ 64 Kio |
 | socket `/tmp/.X11-unix/X<n>` (dossier 1777) | faux serveur qui récupère le cookie | `SO_PEERCRED` : l'uid du pair doit être celui du Xorg découvert |
+| chemin `-auth`/`XAUTHORITY` vers un périphérique | `open()` par root avec effets de bord | `lstat` avant `open()`, puis `fstat` : même dev/inode |
 | Xauthority | fichier piégé | parseur borné sans panique, seul `MIT-MAGIC-COOKIE-1` de 16 octets, cookie jamais journalisé |
 | `/proc/<pid>/environ` (repli) | `XAUTHORITY` pointant ailleurs | fichier du client lui-même ; jamais vers un serveur X non-root d'un autre uid |
 | netlink uevent | faux événements / tempête | seulement pid 0 (noyau), messages ≤ 8 Kio non tronqués, `SUBSYSTEM=drm` + `ACTION=change` + `dri/card*`, regroupement 150 ms et limite 1 recadrage / 300 ms |
@@ -56,6 +57,14 @@ Le démon tourne en root et lit des données que n'importe quel utilisateur peut
 | logs | injection de lignes | caractères de contrôle neutralisés, 512 caractères max |
 | géométrie X | débordement | `checked_add`, `try_from`, bornes `GetScreenSizeRange` |
 | processus | élévation | unité systemd durcie (`systemd-analyze security` : 2.1 OK) : 2 capacités seulement, pas de réseau IP, FS en lecture seule sauf `/run`, filtre d'appels système |
+
+## Risques résiduels connus
+
+- Un utilisateur local peut lancer un serveur X à lui qui ne répond plus : le démon reste bloqué
+  sur ce serveur (disponibilité du recadrage seulement, aucune élévation). Atténué : serveurs root
+  traités en premier, 8 serveurs max par passe ; `Restart=on-failure` ne couvre pas un blocage.
+- Le `sha256` livré avec le binaire garantit l'intégrité de la copie, pas son authenticité
+  (pas de signature).
 
 ## Limites
 
